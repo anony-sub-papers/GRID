@@ -1,0 +1,341 @@
+## CMD for Starting the mlflow server from Projects root directory
+## mlflow server --backend-store-uri sqlite:///mlflow.db --default-artifact-root ./mlruns --host 0.0.0.0 --port 5555
+
+oracle:
+  ML: true
+  model_path: "oracles/oracle_3_MLPRegressor.joblib"
+
+mlflow:
+  tracking_uri: "http://localhost:5555" # Replace with your actual MLflow server URI
+  experiment_name: "GFlowNet_Financial_Risk_Discovery_Oracle3"
+  run_name: "Oracle3Run_Final"
+  save_artifacts: true
+  log_every_n_steps: 500
+  log_params: true
+  log_metrics: true
+  log_artifacts: true
+  artifact_path: "artifacts"
+
+model:
+  training_parameters:
+    n_runs: 1
+    seed: 110
+    n_iterations: 501
+    batch_size: 16
+    learning_rate: 0.0005
+    learning_rate_logZ: 0.0005
+    optimizer: "adam" # TODO: Add more optimizers
+    loss: "mse"
+    init_exploration_noise: 20 #5 #20
+    trajectory_length: 12
+    exploration_percentage: 0 #0.15
+    replay_buffer_size: 5000 #25000
+    warmup_steps: 0
+    distribution_type: "mixture_beta" # "mixture_gaussian" # "mixture_beta" # "normal" , "beta_soft", student_t
+    mixture: True
+    mixture_components: 5
+    initialization_type:
+      "uniform" #Supported types: 'xavier_uniform', 'xavier_normal',
+      #'kaiming_uniform', 'kaiming_normal', 'orthogonal', 'normal', 'uniform'
+
+  model_parameters:
+    input_size: 7 #8
+    output_size: 12 #  ( Input dim - 1 ) * 2
+    hidden_size: 256
+    num_layers: 3
+    dropout: 0
+    activation: "leaky_relu"
+    use_batchnorm: false
+    use_layernorm: true
+
+results:
+  n_simulations: 200
+
+  ## NEW USECASE ##
+  # 2001 Fall Use case - train till end of 2000, 2001 test period and simulation, predicted for end of 2002
+  # Real drop was from 1170 to 870, 26% Drop
+# initial_state:
+#   Volume_spx: 77.032977
+#   Close_ndx: -5.948614
+#   Volumne_ndx: 100.000000
+#   Close_vix: -62.244894
+#   IRLTCT01USM156N: -29.545455 # High means Inflation , Low means Deflation
+#   BAMLH0A3HYCEY: 100.000000
+
+# 2007 Fall Use Case
+# initial_state:
+#   Volume_spx: -39.049124
+#   Close_ndx: -46.161351
+#   Volume_ndx: 18.651555
+#   Close_vix: -100.000000
+#   IRLTCT01USM156N: -0.786245
+#   BAMLH0A3HYCEY: -94.091681
+
+# # 2022
+initial_state:
+  Volume_spx: 12.666089
+  Close_ndx: 55.683145
+  Volume_ndx: 53.104625
+  Close_vix: -47.439460
+  IRLTCT01USM156N: -88.410730
+  BAMLH0A3HYCEY: -82.352941
+
+reward:
+  formula: "SPX_X"
+
+variables:
+  SPX_X:
+    formula: "906.83 + SPX * 418.76 + SPX_Volume * 130.88 + NDX * 197.5 + NDX_Volume * 25.86 - VIX * 42.83 + LowYields * 46.17 - HighYields * 59.32"
+    transform: False
+    method: "C"
+    difference: False
+    lag: 0
+    components:
+      # Close_spx:
+      #   transform: False
+      #   method: None
+      #   difference: False
+      #   lag: 0
+      Volume_spx:
+        transform: False
+        method: "C"
+        difference: False
+        lag: 0
+      Close_ndx:
+        transform: False
+        method: "C"
+        difference: False
+        lag: 0
+      Volume_ndx:
+        transform: False
+        method: "C"
+        difference: False
+        lag: 0
+      Close_vix:
+        transform: False
+        method: "C"
+        difference: False
+        lag: 0
+      BAMLH0A3HYCEY:
+        transform: False
+        method: "C"
+        difference: False
+        lag: 0
+      IRLTCT01USM156N:
+        transform: False
+        method: "C"
+        difference: False
+        lag: 0
+# # Fake usecase
+# initial_state:
+#   3_Month_Treasury_Constant_Maturity_Rate: 111
+#   Nuveen_AMT_Free_Municipal_Credit_Income_Fund_NV: 111
+#   3_Year_Treasury_Constant_Maturity_Rate: 111
+#   30_Year_Fixed_Rate_Mortgage_Average_US: 111
+#   6_Month_Treasury_Constant_Maturity_Rate: 111
+#   Crude_Oil_Prices_Brent_Europe_Seasonally_Adjusted: 111
+#   ICE_BofAML_US_Corporate_AA_Option_Adjusted_Spread: 111
+#   ICE_BofAML_US_High_Yield_CCC_or_Below_Option_Adjusted_Spread: 111
+#   Nuveen_AMT_Free_Quality_Municipal_Income_Fund_NEA: 111
+#   S_P_500_from_Yahoo: 111
+
+# reward:
+#   formula: "DCU_OL_Delinquencies_Affinity_Reportable_Delinquent_Loans / DCU_OL_Loan_Affinity_Total_Loans_AC"
+
+# variables:
+#   DCU_OL_Delinquencies_Affinity_Reportable_Delinquent_Loans:
+#     formula: "1000 + 3_Month_Treasury_Constant_Maturity_Rate * -0.6887 + Nuveen_AMT_Free_Municipal_Credit_Income_Fund_NV * -0.153808"
+#     transform: False
+#     method: "C"
+#     difference: False
+#     lag: 0
+#     components:
+#       3_Month_Treasury_Constant_Maturity_Rate:
+#         transform: False
+#         method: None
+#         difference: False
+#         lag: 0
+#       Nuveen_AMT_Free_Municipal_Credit_Income_Fund_NV:
+#         transform: False
+#         method: "C"
+#         difference: False
+#         lag: 0
+
+#   DCU_OL_Loan_Affinity_Total_Loans_AC:
+#     formula:
+#       #0.032329
+#       "100 + 3_Year_Treasury_Constant_Maturity_Rate * 0.36812 + 30_Year_Fixed_Rate_Mortgage_Average_US * 0.73206 +
+#       30_Year_Fixed_Rate_Mortgage_Average_US_Lag_1 * 0.44097 + 30_Year_Fixed_Rate_Mortgage_Average_US_Lag_2 * 0.11234 +
+#       6_Month_Treasury_Constant_Maturity_Rate * 0.36606 + Crude_Oil_Prices_Brent_Europe_Seasonally_Adjusted * 0.1237 +
+#       ICE_BofAML_US_Corporate_AA_Option_Adjusted_Spread_Lag_1 * 0.1051 +
+#       ICE_BofAML_US_High_Yield_CCC_or_Below_Option_Adjusted_Spread_Lag_1 * 0.893 +
+#       Nuveen_AMT_Free_Quality_Municipal_Income_Fund_NEA_Lag_2 * 0.13355 - 0.511 * S_P_500_from_Yahoo_Lag_2"
+#     transform: False
+#     method: "B"
+#     difference: False
+#     lag: 0
+
+#     components:
+#       3_Year_Treasury_Constant_Maturity_Rate:
+#         transform: False
+#         method: None
+#         difference: False
+#         lag: 0
+#       30_Year_Fixed_Rate_Mortgage_Average_US:
+#         transform: False
+#         method: "B"
+#         difference: False
+#         lag: 0
+#       30_Year_Fixed_Rate_Mortgage_Average_US_Lag_1:
+#         source: 30_Year_Fixed_Rate_Mortgage_Average_US
+#         transform: False
+#         method: "B"
+#         difference: False
+#         lag: 1
+#       30_Year_Fixed_Rate_Mortgage_Average_US_Lag_2:
+#         source: 30_Year_Fixed_Rate_Mortgage_Average_US
+#         transform: False
+#         method: "B"
+#         difference: False
+#         lag: 2
+#       6_Month_Treasury_Constant_Maturity_Rate:
+#         transform: False
+#         method: None
+#         difference: False
+#         lag: 0
+#       Crude_Oil_Prices_Brent_Europe_Seasonally_Adjusted:
+#         transform: False
+#         method: "B"
+#         difference: False
+#         lag: 0
+#       ICE_BofAML_US_Corporate_AA_Option_Adjusted_Spread_Lag_1:
+#         source: ICE_BofAML_US_Corporate_AA_Option_Adjusted_Spread
+#         transform: False
+#         method: "B"
+#         difference: False
+#         lag: 1
+#       ICE_BofAML_US_High_Yield_CCC_or_Below_Option_Adjusted_Spread_Lag_1:
+#         source: ICE_BofAML_US_High_Yield_CCC_or_Below_Option_Adjusted_Spread
+#         transform: False
+#         method: None
+#         difference: False
+#         lag: 1
+#       Nuveen_AMT_Free_Quality_Municipal_Income_Fund_NEA_Lag_2:
+#         source: Nuveen_AMT_Free_Quality_Municipal_Income_Fund_NEA
+#         transform: False
+#         method: "B"
+#         difference: False
+#         lag: 2
+#       S_P_500_from_Yahoo_Lag_2:
+#         source: S_P_500_from_Yahoo
+#         transform: False
+#         method: "B"
+#         difference: False
+#         lag: 2
+
+# Real Data
+
+# initial_state:
+#   3_Month_Treasury_Constant_Maturity_Rate: 5.5
+#   Nuveen_AMT_Free_Municipal_Credit_Income_Fund_NV: 12.48
+#   3_Year_Treasury_Constant_Maturity_Rate: 5.33
+#   30_Year_Fixed_Rate_Mortgage_Average_US: 6.7
+#   6_Month_Treasury_Constant_Maturity_Rate: 5
+#   Crude_Oil_Prices_Brent_Europe_Seasonally_Adjusted: 78.5
+#   ICE_BofAML_US_Corporate_AA_Option_Adjusted_Spread: 0.63
+#   ICE_BofAML_US_High_Yield_CCC_or_Below_Option_Adjusted_Spread: 10
+#   Nuveen_AMT_Free_Quality_Municipal_Income_Fund_NEA: 11.7
+#   S_P_500_from_Yahoo: 1971.5
+
+# reward:
+#   formula: "DCU_OL_Delinquencies_Affinity_Reportable_Delinquent_Loans / DCU_OL_Loan_Affinity_Total_Loans_AC"
+
+# variables:
+#   DCU_OL_Delinquencies_Affinity_Reportable_Delinquent_Loans:
+#     formula: "21.17495 + 3_Month_Treasury_Constant_Maturity_Rate * -6.887 + Nuveen_AMT_Free_Municipal_Credit_Income_Fund_NV * -1.53808"
+#     transform: False
+#     method: "C"
+#     difference: False
+#     lag: 0
+#     components:
+#       3_Month_Treasury_Constant_Maturity_Rate:
+#         transform: False
+#         method: None
+#         difference: True
+#         lag: 0
+#       Nuveen_AMT_Free_Municipal_Credit_Income_Fund_NV:
+#         transform: True
+#         method: "C"
+#         difference: True
+#         lag: 0
+
+#   DCU_OL_Loan_Affinity_Total_Loans_AC:
+#     formula:
+#       "0.032329 + 3_Year_Treasury_Constant_Maturity_Rate * 0.36812 + 30_Year_Fixed_Rate_Mortgage_Average_US * 0.03206 +
+#       30_Year_Fixed_Rate_Mortgage_Average_US_Lag_1 * 0.04097 + 30_Year_Fixed_Rate_Mortgage_Average_US_Lag_2 * 0.11234 +
+#       6_Month_Treasury_Constant_Maturity_Rate * 0.36606 + Crude_Oil_Prices_Brent_Europe_Seasonally_Adjusted * 0.01237 +
+#       ICE_BofAML_US_Corporate_AA_Option_Adjusted_Spread_Lag_1 * 0.01051 +
+#       ICE_BofAML_US_High_Yield_CCC_or_Below_Option_Adjusted_Spread_Lag_1 * 0.00893 +
+#       Nuveen_AMT_Free_Quality_Municipal_Income_Fund_NEA_Lag_2 * 0.13355 + S_P_500_from_Yahoo_Lag_2 * -0.0511"
+#     transform: False
+#     method: "B"
+#     difference: False
+#     lag: 0
+
+#     components:
+#       3_Year_Treasury_Constant_Maturity_Rate:
+#         transform: False
+#         method: None
+#         difference: False
+#         lag: 0
+#       30_Year_Fixed_Rate_Mortgage_Average_US:
+#         transform: True
+#         method: "B"
+#         difference: True
+#         lag: 0
+#       30_Year_Fixed_Rate_Mortgage_Average_US_Lag_1:
+#         source: 30_Year_Fixed_Rate_Mortgage_Average_US
+#         transform: True
+#         method: "B"
+#         difference: True
+#         lag: 1
+#       30_Year_Fixed_Rate_Mortgage_Average_US_Lag_2:
+#         source: 30_Year_Fixed_Rate_Mortgage_Average_US
+#         transform: True
+#         method: "B"
+#         difference: True
+#         lag: 2
+#       6_Month_Treasury_Constant_Maturity_Rate:
+#         transform: False
+#         method: None
+#         difference: True
+#         lag: 0
+#       Crude_Oil_Prices_Brent_Europe_Seasonally_Adjusted:
+#         transform: True
+#         method: "B"
+#         difference: True
+#         lag: 0
+#       ICE_BofAML_US_Corporate_AA_Option_Adjusted_Spread_Lag_1:
+#         source: ICE_BofAML_US_Corporate_AA_Option_Adjusted_Spread
+#         transform: True
+#         method: "B"
+#         difference: True
+#         lag: 1
+#       ICE_BofAML_US_High_Yield_CCC_or_Below_Option_Adjusted_Spread_Lag_1:
+#         source: ICE_BofAML_US_High_Yield_CCC_or_Below_Option_Adjusted_Spread
+#         transform: True
+#         method: None
+#         difference: False
+#         lag: 1
+#       Nuveen_AMT_Free_Quality_Municipal_Income_Fund_NEA_Lag_2:
+#         source: Nuveen_AMT_Free_Quality_Municipal_Income_Fund_NEA
+#         transform: True
+#         method: "B"
+#         difference: True
+#         lag: 2
+#       S_P_500_from_Yahoo_Lag_2:
+#         source: S_P_500_from_Yahoo
+#         transform: True
+#         method: "B"
+#         difference: True
+#         lag: 2
