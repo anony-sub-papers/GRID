@@ -1,6 +1,6 @@
 # GRID: GFlowNet-based Financial Risk Discovery
 
-This repository contains the code for the ICML 2026 paper on **GFlowNet-based discovery of financial stress trajectories**. The project trains forward and backward generative policies over macro/market variables, guided by a learned oracle of financial risk, and logs all runs and diagnostics with MLflow.
+This repository contains the code for the ICLR 2026 paper on **GFlowNet-based discovery of financial stress trajectories**. The project trains forward and backward generative policies over macro/market variables, guided by a learned oracle of financial risk, and logs all runs and diagnostics with MLflow.
 
 ---
 
@@ -290,7 +290,7 @@ Recommended workflow:
 
 ## 8. Citation
 
-This repository accompanies a paper submitted to ICML 2026. If you use this code in academic work, please cite the paper once it is available.
+This repository accompanies a paper submitted to  2026. If you use this code in academic work, please cite the paper once it is available.
 
 > **BibTeX entry will be added after acceptance.** ✨
 
